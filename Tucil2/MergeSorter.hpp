@@ -15,14 +15,14 @@ class MergeSorter  {
 	}
 
 	static void sort(int *table, int i, int j) {
-		table[0]=99;
-		// int k;
-		// if (i<j) {
-		// 	k = (i + j) / 2;
-		// 	sort(table, i, k);
-		// 	sort(table, k + 1, j);
-		// 	merge(table,i,k,j);
-		// }
+		// table[0]=99;
+		int k;
+		if (i<j) {
+			k = (i + j) / 2;
+			sort(table, i, k);
+			sort(table, k + 1, j);
+			merge(table,i,k,j);
+		}
 	}
 
 	static void merge(int* table, int left, int mid, int right) {
@@ -60,9 +60,9 @@ class MergeSorter  {
 		}
 		cout << endl;
 
-		//for (int i = left; i <= right; i++) {
-			//table[i] = tempTable[i-left];
-		//	}//salin elemen tempTable ke table
+		for (int i = left; i <= right; i++) {
+			table[i] = tempTable[i-left];
+			}//salin elemen tempTable ke table
 	}
 
 };
