@@ -1,95 +1,81 @@
-// #include "MergeSorter.hpp"
+ #include "MergeSorter.hpp"
+  #include "QuickSorter.hpp"
 
 #include <stdlib.h>
-#include <vector>
 #include <iostream>
 #include <time.h>
+#include <stdio.h>
 
 using namespace std;
 
-void sort(int *table, int i, int j);
-void merge(int* table, int left, int mid, int right);
-
 int main() {
-	int size;
-	cout << "ukuran table yang diinginkan: ";
-	cin >> size;
-	srand(time(NULL));
+  bool keluar = false;
+  int size;
+  while(!keluar){
+    cout << "ukuran table yang diinginkan: ";
+    cin >> size;
+    srand(time(NULL));
 
-	int table[size];// = new int(size);
+    int oldTable[size];
+    for (int i = 0; i < size; i++) {
+      oldTable[i]=(rand()%(size*10)+1);
+    }
+    int opt=1;
+    while(opt!=5){
+      cout<<"Jenis Sort (default : Merge Sort): "<<endl;
+      cout<<"1: Merge Sort"<<endl;
+      cout<<"2: Quick Sort"<<endl;
+      cout<<"3: Selection Sort"<<endl;
+      cout<<"4: Insertion Sort"<<endl;
+      cout<<"5: Pilih ukuran lain"<<endl;
+      cout<<"0: Keluar"<<endl;
+      cout<<"Pilihanmu: ";
+      cin>>opt;
 
-	for (int i = 0; i < size; i++) {
-		table[i]=(rand()%size+1);
-	}
-	
-	for (int i = 0; i < size; i++) {
-		cout<<table[i]<<",";
-	}
+      if(opt==0){
+        opt=5;
+        keluar = true;
+      } else if(opt!=5){
+        int table[size];
 
-	sort(table, 0, size - 1);
+        for (int i = 0; i < size; i++) {
+          table[i]=oldTable[i];
+        }
 
-	cout << endl;
-	for (int i = 0; i < size; i++) {
-		cout<<table[i]<<",";
-	}
-	
+      	cout<<endl;
+      	cout<<"Tabel awal: "<<endl;
+      	for (int i = 0; i < size; i++) {
+      		cout<<table[i]<<"|";
+      	}
+
+      	clock_t start = clock();
+
+        switch (opt) {
+          case 1: {
+            MergeSorter::sort(table,0,size-1);
+          }
+          case 2: {
+            QuickSorter::sort(table, 0,size-1);
+          }
+        }
+
+      	clock_t end = clock();
+      	float seconds = (float)(end - start)*1000 / CLOCKS_PER_SEC;
+
+      	cout<<endl<<endl;
+      	cout<<"Tabel hasil pengurutan: "<<endl;
+      	for (int i = 0; i < size; i++) {
+      		cout<<table[i]<<"|";
+      	}
+
+      	cout<<endl<<endl;
+      	printf ("Waktu eksekusi: %.3lf ms.\n", seconds );
+      	cout<<endl;
+      }
+      else {
+        keluar = false;
+      }
+    }
+  }
 	return 0;
 }
-
-
-	void sort(int *table, int i, int j) {
-		// table[0]=99;
-		int k;
-		if (i<j) {
-			k = (i + j) / 2;
-			sort(table, i, k);
-			sort(table, k + 1, j);
-			merge(table,i,k,j);
-		}
-	}
-
-	void merge(int* table, int left, int mid, int right) {
-		int tempTable[right-left+1];// = new int();
-		
-		int iteratorL, iteratorR;
-		
-		iteratorL = left;
-		iteratorR = mid + 1;
-		int i=0;
-
-		while ((iteratorL <= mid) && (iteratorR <= right)) {
-			if (table[iteratorL] <= table[iteratorR]) {
-				tempTable[i]=table[iteratorL];
-				iteratorL++;
-			}
-			else {
-				tempTable[i]=table[iteratorR];
-				iteratorR++;
-			}
-			i++;
-		}
-
-		while (iteratorL <= mid) {
-			tempTable[i]=table[iteratorL];
-			iteratorL++;
-			i++;
-		}//salin sisa table bagian kiri ke tempTable jika ada
-
-		while (iteratorR <= right) {
-			tempTable[i]=table[iteratorR];
-			iteratorR++;
-			i++;
-		}//salin sisa table bagian kanan ke tempTable jika ada
-
-		// cout << endl;
-		// for (int i = 0; i < sizeof(tempTable)/sizeof(tempTable[0]); i++) {
-		// 	cout << tempTable[i]<<"| ";
-		// }
-		// cout << endl;
-
-		for (int j = left; j <= right; j++) {
-			table[j] = tempTable[j-left];
-			}//salin elemen tempTable ke table
-
-		free(tempTable);
-	}
