@@ -1,9 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
-using namespace std;
-
 class MergeSorter  {
 	public:
 	MergeSorter() {
@@ -15,7 +11,7 @@ class MergeSorter  {
 	}
 
 	static void sort(int *table, int i, int j) {
-		// table[0]=99;
+
 		int k;
 		if (i<j) {
 			k = (i + j) / 2;
@@ -26,43 +22,41 @@ class MergeSorter  {
 	}
 
 	static void merge(int* table, int left, int mid, int right) {
-		vector<int> tempTable;
-		
+		int tempTable[right-left+1];
+
 		int iteratorL, iteratorR;
-		
+
 		iteratorL = left;
 		iteratorR = mid + 1;
+		int i=0;
 
 		while ((iteratorL <= mid) && (iteratorR <= right)) {
 			if (table[iteratorL] <= table[iteratorR]) {
-				tempTable.push_back(table[iteratorL]);
+				tempTable[i]=table[iteratorL];
 				iteratorL++;
 			}
 			else {
-				tempTable.push_back(table[iteratorR]);
+				tempTable[i]=table[iteratorR];
 				iteratorR++;
 			}
+			i++;
 		}
 
 		while (iteratorL <= mid) {
-			tempTable.push_back(table[iteratorL]);
+			tempTable[i]=table[iteratorL];
 			iteratorL++;
+			i++;
 		}//salin sisa table bagian kiri ke tempTable jika ada
 
 		while (iteratorR <= right) {
-			tempTable.push_back(table[iteratorR]);
+			tempTable[i]=table[iteratorR];
 			iteratorR++;
+			i++;
 		}//salin sisa table bagian kanan ke tempTable jika ada
 
-		cout << endl;
-		for (int i = 0; i < tempTable.size(); i++) {
-			cout << tempTable[i]<<"| ";
-		}
-		cout << endl;
-
-		for (int i = left; i <= right; i++) {
-			table[i] = tempTable[i-left];
+		for (int j = left; j <= right; j++) {
+			table[j] = tempTable[j-left];
 			}//salin elemen tempTable ke table
-	}
 
+	}
 };
