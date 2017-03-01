@@ -46,16 +46,4 @@ class QuickSorter  {
 		}
 	}
 
-  static int getMean(int *table, int left, int right){
-    int sum = 0;
-    int size = right-left+1;
-
-    for(int i=left; i<=right; i++){
-      sum+=table[i];
-    }
-
-    return sum/size;
-  }
-
-
 };
