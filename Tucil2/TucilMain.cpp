@@ -3,8 +3,6 @@
  #include "SelectionSorter.hpp"
  #include "InsertionSorter.hpp"
 
-
-
 #include <stdlib.h>
 #include <iostream>
 #include <time.h>
