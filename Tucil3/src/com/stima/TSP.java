@@ -10,10 +10,11 @@ import java.util.Scanner;
  */
 
 public class TSP {
-    CostMtx costMtx;
+    CostMatrix costMatrix;
     ArrayList<Integer> aliveNode;
     int currentNode;
     private static final int INFINITY = 999;
+    int risenNodeTree;
 
     public TSP(String filename) {
         ArrayList<Integer> content = new ArrayList<>();
@@ -38,30 +39,33 @@ public class TSP {
         }
         aliveNode = new ArrayList<>();
         currentNode = 0;
-        costMtx = new CostMtx(mtxGraph,size,0);
+        risenNodeTree = 0;
+        costMatrix = new CostMatrix(mtxGraph,size,0);
     }
 
-    public TSP(CostMtx costMtx, int size, ArrayList<Integer> aliveNode, int currentNode, int cost){
-        this.costMtx = new CostMtx(costMtx);
+    public TSP(CostMatrix costMatrix, int size, ArrayList<Integer> aliveNode, int currentNode, int cost, int risenNodeTree){
+        this.costMatrix = new CostMatrix(costMatrix);
         for (int i =0; i<aliveNode.size(); i++){
             this.aliveNode.add(aliveNode.get(i));
         }
         this.currentNode = currentNode;
+        this.risenNodeTree = risenNodeTree;
     }
 
     public TSP( TSP tsp){
-        this.costMtx = new CostMtx(tsp.costMtx);
+        this.costMatrix = new CostMatrix(tsp.costMatrix);
         aliveNode = new ArrayList<>();
         for (int i =0; i<tsp.aliveNode.size(); i++){
             this.aliveNode.add(tsp.aliveNode.get(i));
         }
         this.currentNode = tsp.currentNode;
+        this.risenNodeTree= tsp.risenNodeTree;
     }
 
     public boolean isSolution(){
         boolean getSolution= true;
         int i=0;
-        while(getSolution && i< costMtx.getSize()) {
+        while(getSolution && i< costMatrix.getSize()) {
             if(!aliveNode.contains(i)){
                 getSolution=false;
             }
@@ -72,7 +76,7 @@ public class TSP {
 
     public ArrayList<Integer> riseChild() {
         ArrayList<Integer> result = new ArrayList<>();
-        for (int i = 0; i < costMtx.getSize(); i++) {
+        for (int i = 0; i < costMatrix.getSize(); i++) {
             if (!aliveNode.contains(i)) {
                 result.add(i);
             }
@@ -80,36 +84,36 @@ public class TSP {
         return result;
     }
 
-    public void initBnB(){
+    public void initReducedCostMtx(){
         aliveNode.add(currentNode);
-        costMtx.reduceCost();
+        costMatrix.reduceCost();
+        risenNodeTree = 1;
     }
 
-    public void BnB(){
+    public void reducedCostMatrix(){
         if(isSolution()){
 
         } else {
             ArrayList<Integer> children = riseChild();
-            CostMtx[] childrenMtx= new CostMtx[children.size()];
+            CostMatrix[] childrenMtx= new CostMatrix[children.size()];
 
-            int size = costMtx.getSize();
+            int size = costMatrix.getSize();
 
             for(int idx=0; idx<children.size(); idx++){
-                CostMtx newCostMtx = new CostMtx(costMtx);
-                int addition = costMtx.getMtx()[currentNode][children.get(idx)];
-                newCostMtx.addCost(addition);
+                CostMatrix newCostMatrix = new CostMatrix(costMatrix);
+                int addition = costMatrix.getMtx()[currentNode][children.get(idx)];
+                newCostMatrix.addCost(addition);
                 for(int i=0; i<size; i++){
-                    newCostMtx.change(currentNode,i,INFINITY);
+                    newCostMatrix.change(currentNode,i,INFINITY);
                 }
                 for(int i=0; i<size; i++){
-                    newCostMtx.change(i,children.get(idx),INFINITY);
+                    newCostMatrix.change(i,children.get(idx),INFINITY);
                 }
-                newCostMtx.change(children.get(idx),0, INFINITY);
-                newCostMtx.reduceCost();
-                childrenMtx[idx] = newCostMtx;
-
+                newCostMatrix.change(children.get(idx),0, INFINITY);
+                newCostMatrix.reduceCost();
+                childrenMtx[idx] = newCostMatrix;
             }
-
+            risenNodeTree+=children.size();
             if(childrenMtx.length!=0) {
                 int minCost = childrenMtx[0].getCost();
                 int idxMin = 0;
@@ -119,18 +123,19 @@ public class TSP {
                         idxMin = idx;
                     }
                 }
-                this.costMtx = childrenMtx[idxMin];
+                this.costMatrix = childrenMtx[idxMin];
                 currentNode = children.get(idxMin);
                 aliveNode.add(currentNode);
-                BnB();
+                reducedCostMatrix();
             }
         }
     }
 
 
     public void initFullTourCost(){
-        costMtx.findFullTourCost(aliveNode,currentNode);
+        costMatrix.findFullTourCost(aliveNode,currentNode);
         aliveNode.add(0);
+        risenNodeTree = 1;
     }
 
     public void fullTourCost(){
@@ -139,16 +144,16 @@ public class TSP {
         } else {
             ArrayList<Integer> children = riseChild();
 
-            CostMtx[] childrenMtx= new CostMtx[children.size()];
+            CostMatrix[] childrenMtx= new CostMatrix[children.size()];
 
-            int size = costMtx.getSize();
+            int size = costMatrix.getSize();
 
             for(int idx=0; idx<children.size(); idx++){
-                CostMtx newCostMtx = new CostMtx(costMtx);
-                newCostMtx.findFullTourCost(aliveNode,children.get(idx));
-                childrenMtx[idx] = newCostMtx;
+                CostMatrix newCostMatrix = new CostMatrix(costMatrix);
+                newCostMatrix.findFullTourCost(aliveNode,children.get(idx));
+                childrenMtx[idx] = newCostMatrix;
             }
-
+            risenNodeTree+=children.size();
             if(childrenMtx.length!=0) {
                 ArrayList<TSP> nextOpt = new ArrayList<>();
 
@@ -164,33 +169,35 @@ public class TSP {
                 for (int idx = 0; idx < children.size(); idx++) {
                     if(childrenMtx[idx].getCost()==minCost) {
                         TSP nextChild = new TSP(this);
-                        nextChild.costMtx = childrenMtx[idx];
+                        nextChild.costMatrix = childrenMtx[idx];
                         nextChild.currentNode = children.get(idx);
                         nextChild.aliveNode.add(nextChild.currentNode);
                         nextChild.fullTourCost();
+                        risenNodeTree = nextChild.risenNodeTree;
                         nextOpt.add(nextChild);
                     }
                 }
 
                 idxMin = 0;
-                minCost = nextOpt.get(0).costMtx.getCost();
+                minCost = nextOpt.get(0).costMatrix.getCost();
                 for (int i = 1; i<nextOpt.size(); i++){
-                    if(nextOpt.get(i).costMtx.getCost()==minCost){
+                    if(nextOpt.get(i).costMatrix.getCost()==minCost){
                         idxMin = i;
                     }
                 }
 
-                this.costMtx = nextOpt.get(idxMin).costMtx;
+                this.costMatrix = nextOpt.get(idxMin).costMatrix;
                 this.currentNode = nextOpt.get(idxMin).currentNode;
                 this.aliveNode = nextOpt.get(idxMin).aliveNode;
+                this.risenNodeTree = nextOpt.get(idxMin).risenNodeTree;
             }
         }
     }
 
     public void printContent(){
-        for(int i = 0; i< costMtx.getSize(); i++){
-            for(int j = 0; j< costMtx.getSize(); j++){
-                System.out.print(costMtx.getMtx()[i][j]+" ");
+        for(int i = 0; i< costMatrix.getSize(); i++){
+            for(int j = 0; j< costMatrix.getSize(); j++){
+                System.out.print(costMatrix.getMtx()[i][j]+" ");
             }
             System.out.println(" ");
         }
@@ -198,7 +205,7 @@ public class TSP {
 
     public void printPath(){
         for(int i = 0; i< aliveNode.size(); i++){
-             System.out.print(aliveNode.get(i)+" ");
+             System.out.print((aliveNode.get(i)+1)+" ");
         }
     }
 }
